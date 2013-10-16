@@ -53,6 +53,7 @@ class BookIt extends Extension {
    * @param array $params array of other parameters (see above)
    */
   public function getBusinessesInCategory($categoryCode, $params = array()) {
+
     //error_log("function getBusinessesInCategory() - Bookit.php - line 57", 0);
     $optionalParams = array(
       'DateIn',
@@ -67,12 +68,14 @@ class BookIt extends Extension {
     );
 
     if (!is_array($params)) {
+      echo '$params must be an array';
       throw new BookItException('$params must be an array');
     }
 
     // Make sure nothing funny was submitted
     foreach($params as $name => $value) {
       if (!in_array($name, $optionalParams)) {
+        echo $name . ' is not a valid parameter for this method';
         throw new BookItException($name . ' is not a valid parameter for this method');
       }
     }
@@ -92,6 +95,7 @@ class BookIt extends Extension {
     if (!($returnData = $this->cache->fetch($cacheName))) {
       try {
         //error_log("START - this->client->GetBusinessesInCategory(params); - Bookit.php - line 95", 0);
+        
         $this->client->GetBusinessesInCategory($params);
         //error_log("END - this->client->GetBusinessesInCategory(params); - Bookit.php - line 97", 0);
       } catch (SoapFault $soapException) {
@@ -100,6 +104,8 @@ class BookIt extends Extension {
 
       $dom = simplexml_load_string(str_ireplace('SOAP:', '', $this->client->__getLastResponse()));
       $dom = $dom->Body->GetBusinessesInCategoryResponse->GetBusinessesInCategoryResult->getbusinessesincategory;
+
+      print_r($dom);
       //error_log("END - this->client-> - Bookit.php - line 110", 0);
       $business = array();
       foreach ($dom->businesses->business as $business) {
@@ -116,6 +122,8 @@ class BookIt extends Extension {
           'address' => (string) $business->address,
           'rates' => (object) $business->rate,
         );
+
+        print_r($thisBusiness);
 
         if (function_exists('db_query')) {
           $query = db_select('url_alias', 'a');
@@ -175,7 +183,7 @@ class BookIt extends Extension {
         );
       }
 
-      $this->cache->save($cacheName, $returnData, 3600 * 6);
+     //  $this->cache->save($cacheName, $returnData, 3600 * 6);
     }
 
     $days = array();
@@ -190,6 +198,8 @@ class BookIt extends Extension {
       'businesses' => $businesses,
       'days' => $days
     );
+
+    $this->cache->save($cacheName, $returnData, 3600 * 6);
 
     return $returnData;
   }

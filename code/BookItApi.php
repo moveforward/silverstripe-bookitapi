@@ -62,24 +62,28 @@ class BookItApi extends Extension {
 	*/
 	public function api_connect(Array $query) {
 
-		$bookit = new BookIt(realpath('wsdl/bookit.wsdl'), '/tmp/bookitcache');
-		$bookit->setAgentCode($this->bookituser);
+		$bookit = new BookIt(dirname(__file__).'/wsdl/bookit.wsdl', '/tmp/bookitcache');
+		$bookit->setAgentCode($this->user);
 
-		if(!isset($mode)) {
+		
+
+		if(strlen($this->mode) == 0) {
 			// TODO: error handling
-			echo 'Mode not set for: ' . __function__;
-			return;
+			echo 'Mode not set for ' . __function__;
+
+			return false;
 		}
 
-		switch($mode) {
+		switch($this->mode) {
 			case 'business':
 
+				$bookit->setSearchType('accommodation');
 				return $bookit->getBusiness($this->categorycode, $this->businesscode, $query);
 
 			break;
 
 			case 'businessesincategory':
-
+				$bookit->setSearchType('accommodation');
 				return $bookit->getBusinessesInCategory($this->categorycode, $query);
 
 			break;
@@ -96,9 +100,4 @@ class BookItApi extends Extension {
 				return false;
 		}
 	}
-
-	/**
-	* wrapper method for api_connect
-	* 
-	*/
 }
