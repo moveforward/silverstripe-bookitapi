@@ -62,7 +62,7 @@ class BookItApi extends Extension {
 	*/
 	public function api_connect(Array $query) {
 
-		$bookit = new BookIt('wsdl/bookit.wsdl', '/tmp/bookitcache');
+		$bookit = new BookIt(realpath('wsdl/bookit.wsdl'), '/tmp/bookitcache');
 		$bookit->setAgentCode($this->bookituser);
 
 		if(!isset($mode)) {
