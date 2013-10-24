@@ -23,7 +23,7 @@ class BookItApi extends Extension {
 	* 	set the query mode
 	*	@param (String) $mode
 	*	@return null
-	*/
+	*/ 
 	public function setMode($mode) {
 		$this->mode = $mode;
 	}
@@ -65,7 +65,8 @@ class BookItApi extends Extension {
 		$bookit = new BookIt(dirname(__file__).'/wsdl/bookit.wsdl', '/tmp/bookitcache');
 		$bookit->setAgentCode($this->user);
 
-		
+		// default result set is 40
+		// TODO: alter to retrieve larger datasets via multiple queries 
 
 		if(strlen($this->mode) == 0) {
 			// TODO: error handling

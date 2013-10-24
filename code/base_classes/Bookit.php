@@ -67,18 +67,24 @@ class BookIt extends Extension {
       'SortOrder'
     );
 
+    
+
     if (!is_array($params)) {
-      echo '$params must be an array';
+      
       throw new BookItException('$params must be an array');
     }
+
+    
 
     // Make sure nothing funny was submitted
     foreach($params as $name => $value) {
       if (!in_array($name, $optionalParams)) {
-        echo $name . ' is not a valid parameter for this method';
+        
         throw new BookItException($name . ' is not a valid parameter for this method');
       }
     }
+
+    
 
     // Fill non-supplied optional parameters with blank strings
     foreach($optionalParams as $name) {
@@ -87,28 +93,41 @@ class BookIt extends Extension {
       }
     }
 
+
+
     $params['AgentCode'] = $this->agentCode;
     $params['CategoryCode'] = $categoryCode;
 
+    // print_r($params);
+
+    
+
     $cacheName = sha1(serialize($params));
-    //error_log("function getBusinessesInCategory() - Bookit.php - line 92", 0);
-    if (!($returnData = $this->cache->fetch($cacheName))) {
+    
+    // if (!($returnData = $this->cache->fetch($cacheName))) {
+    if (!false) {
       try {
-        //error_log("START - this->client->GetBusinessesInCategory(params); - Bookit.php - line 95", 0);
         
         $this->client->GetBusinessesInCategory($params);
-        //error_log("END - this->client->GetBusinessesInCategory(params); - Bookit.php - line 97", 0);
-      } catch (SoapFault $soapException) {
+      } 
+      catch (SoapFault $soapException) {
+        
         die('<h4 style="margin-top:10px;">Sorry, there was an error with that search.</h4>');
       }
 
       $dom = simplexml_load_string(str_ireplace('SOAP:', '', $this->client->__getLastResponse()));
       $dom = $dom->Body->GetBusinessesInCategoryResponse->GetBusinessesInCategoryResult->getbusinessesincategory;
 
-      print_r($dom);
+      // print_r($dom);
+
+      
+      
       //error_log("END - this->client-> - Bookit.php - line 110", 0);
-      $business = array();
+      $businesses = array();
       foreach ($dom->businesses->business as $business) {
+
+        
+
         $thisBusiness = array(
           'name' => (string) $business->name,
           'bookingurl' => (string) $business->bookingurl,
@@ -123,28 +142,9 @@ class BookIt extends Extension {
           'rates' => (object) $business->rate,
         );
 
-        print_r($thisBusiness);
-
-        if (function_exists('db_query')) {
-          $query = db_select('url_alias', 'a');
-          $query->fields('a', array('alias'));
-          if ($this->searchType == 'accommodation') {
-            $query->innerJoin('field_data_field_bookit_id', 'b', "a.source = CONCAT('node/', b.entity_id)");
-            $query->condition('b.field_bookit_id_value', $thisBusiness['code']);
-            $query->condition('a.alias', 'accommodation/%', 'LIKE');
-          } elseif ($this->searchType == 'sightsactivities') {
-            $query->innerJoin('field_data_field_bookit_id_sights', 'b', "a.source = CONCAT('node/', b.entity_id)");
-            $query->condition('b.field_bookit_id_sights_value', $thisBusiness['code']);
-            $query->condition('a.alias', 'sights-activities/film-locations/%', 'NOT LIKE');
-            $query->condition('a.alias', 'sights-activities/%', 'LIKE');
-          }
-          $result = $query->execute()->fetchField();
-          $thisBusiness['infourl'] = '/'.$result.'?';
-        }
-
         $thisImage = array();
+
         if ($business->image && count($business->image)) {
-          $thisImage = array();
           $thisImage['url'] = (string) $business->image->url;
           $thisImage['credit'] = (string) $business->image->credit != '[None]' ? (string) $business->image->credit : '';
           $thisImage['caption'] = (string) $business->image->caption != '[Untitled Image]' ? (string) $business->image->caption : '';
@@ -157,11 +157,17 @@ class BookIt extends Extension {
         }
 
         if ($business->availabilitybyday && count($business->availabilitybyday->day)) {
+
+          
+
           $availability = array(
             'attributes' => array(''),
             'days' => array()
           );
           foreach ($business->availabilitybyday->day as $day) {
+
+            
+
             $availability['days'][] = array(
               'date' => (string) $day['date'],
               'ratename' => (string) $day['ratename'],
@@ -173,6 +179,8 @@ class BookIt extends Extension {
             );
           }
         } else {
+
+          
           $availability = FALSE;
         }
 
@@ -185,9 +193,14 @@ class BookIt extends Extension {
 
      //  $this->cache->save($cacheName, $returnData, 3600 * 6);
     }
+    else {
+      
+    }
 
     $days = array();
+    
     if (isset($dom->businesses->availabilitybyday->day)) {
+
       foreach($dom->businesses->availabilitybyday->day as $day) {
         list($d, $m, $y) = explode('/', (string) $day['date']);
         $days[] = strtotime("$m/$d/$y");
@@ -199,7 +212,7 @@ class BookIt extends Extension {
       'days' => $days
     );
 
-    $this->cache->save($cacheName, $returnData, 3600 * 6);
+    // $this->cache->save($cacheName, $returnData, 3600 * 6);
 
     return $returnData;
   }

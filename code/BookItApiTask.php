@@ -10,24 +10,38 @@ class BookItApiTask extends BuildTask{
 	function run($request) {
 
 		$b = new BookItAPI();
-		$b->setCategoryCode('123');
-		$b->setMode('business');
-
+		$b->setMode('businessesincategory');
+		// no need to set category code as we can query without it
+		// just test api connection and data return
 
 		$query_attributes = array(
-			'category' => 6, 
-			'location' => 363,
-			'modified_since' => date('Y-m-d h:i:s', strtotime('-30 days')),
-			'created_since' => date('Y-m-d h:i:s', strtotime('-30 days'))
-			); 
+			'MajorRegionCode' => 'WEL'
+		); 
 
 		$results = $b->api_connect($query_attributes); 
 
-		echo count($results) . ' results returned'; 
+		echo '<h4>Testing getBusinessesByCategory</h4>';
 
-		foreach ($results as $result) {
-			print_r($result);
+		$r_count = count($results['businesses']);
+
+		if($r_count > 0) {
+			echo '<p>' . count($results['businesses']) . ' results</p>';
+
+			foreach ($results['businesses'] as $key => $value) {
+				echo '<p>'.$value['business']['name'].'</p>';
+			}
+		}
+		else {
+			echo '<p>No results returned. Check your API key.</p>';			
 		}
 
+		echo '<h4>Testing getBusiness</h4>';
+
+		$b->setMode('business');
+		$b->setBusinessCode('KINWGN');
+
+		$results = $b->api_connect(array());
+
+		echo '<pre>'.print_r($results, 1).'</pre>';
 	}
 }
