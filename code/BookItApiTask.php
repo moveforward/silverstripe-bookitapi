@@ -15,7 +15,10 @@ class BookItApiTask extends BuildTask{
 		// just test api connection and data return
 
 		$query_attributes = array(
-			'MajorRegionCode' => 'WEL'
+			'MajorRegionCode' => 'WEL',
+			'DateIn' => date('d/m/y', strtotime('now')),
+			'DateOut' => date('d/m/y', strtotime('+7 days')),
+			'DaysRequired' => 7
 		); 
 
 		$results = $b->api_connect($query_attributes); 
@@ -28,7 +31,7 @@ class BookItApiTask extends BuildTask{
 			echo '<p>' . count($results['businesses']) . ' results</p>';
 
 			foreach ($results['businesses'] as $key => $value) {
-				echo '<p>'.$value['business']['name'].'</p>';
+				echo '<p>'.$value['business']['name'].' (Code: '.$value['business']['code'].')</p>';
 			}
 		}
 		else {
@@ -40,8 +43,18 @@ class BookItApiTask extends BuildTask{
 		$b->setMode('business');
 		$b->setBusinessCode('KINWGN');
 
-		$results = $b->api_connect(array());
+		$query_attributes = array(
+			'DateIn' => date('d/m/y', strtotime('now')),
+			'DateOut' => date('d/m/y', strtotime('+7 days'))
+		);
 
-		echo '<pre>'.print_r($results, 1).'</pre>';
+
+		$results = $b->api_connect($query_attributes);
+
+		echo '<h3>Location: '.$results['business']['name'].'</h3>';
+
+		echo '<h4>Current week</h4>';
+
+		echo BookItAPIDataFormatter::formatBusinessDataAsTable($results);
 	}
 }

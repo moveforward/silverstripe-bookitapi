@@ -566,6 +566,8 @@ class BookIt extends Extension {
 
 // Convert from a date to a timestamp
 function nz2ts($nzDate) {
+
+  
   list($d, $m, $y) = explode('/', $nzDate);
   return strtotime("$m/$d/$y");
 }
